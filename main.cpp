@@ -1,20 +1,13 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-using namespace std;
+#include "functions.h"
 
 int main() {
-    ifstream inputFile("patient.csv");
+    vector<patient> patients;
 
-    string line;
-
-    if (!inputFile.is_open()) {
-        cout << "Error opening file" << endl;
-        return -1;
-    }
-
-    while (getline(inputFile, line)) {
-        cout << line << endl;
+    readDataFile("patient.csv", "output.txt", patients);
+    cout << endl;
+    int count = 1;
+    for (int i = 0; i < patients.size(); i++) {
+        cout << count << ": " << patients[i].firstName << " " << patients[i].lastName << " needs to go to: " << patients[i].clinicName << endl;
+        count += 1;
     }
 }
