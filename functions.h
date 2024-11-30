@@ -17,11 +17,86 @@ struct patient {
     string clinicName;
     string firstName;
     string lastName;
+    char type;
     int SSN;
 };
 
 void readDataFile(const string &patientFile, const string &errFile, vector<patient> &patients);
+bool isDigits(string s);
 
+class Logger {
+    ofstream outputFile;
+public:
+    explicit Logger(const string& oF) {
+        outputFile.open(oF, ios::app);
+        if (!outputFile.is_open()) {
+            outputFile << "Error opening file" << endl;
+            return;
+        }
+    }
+    ~Logger() {
+        if (outputFile.is_open()) {
+            outputFile.close();
+        }
+    }
+    void logMessage(const string& message);
+};
+
+class ClinicPatient {
+
+public:
+    patient cPatient;
+    ClinicPatient* next;
+
+    explicit ClinicPatient(const patient &cP) {
+        cPatient = cP;
+        next = nullptr;
+    }
+    ~ClinicPatient() {
+        next = nullptr;
+    }
+
+};
+
+class Clinic {
+private:
+    ClinicPatient* head;
+    int capacity;
+    Logger logger; // Logger as a member
+
+public:
+    ClinicPatient* tail;
+    string clinicName;
+    int currentPatients;
+    // Constructor declaration
+    Clinic() : logger("output.txt") {
+        head = nullptr;
+        tail = nullptr;
+        clinicName = "";
+        currentPatients = 0;
+        capacity = 10;
+    }
+
+    explicit Clinic(const string& name): logger("output.txt") {
+        head = nullptr;
+        tail = nullptr;
+        clinicName = name;
+        currentPatients = 0;
+        capacity = 10;
+    }
+
+    void setHead(ClinicPatient* cP);
+    ClinicPatient* getHead();
+
+    // Method declarations
+    int addPatient(ClinicPatient& patientToAdd);
+};
+
+void printMenu1();
+void printMenu2(const string& clinicName);
+
+void checkInPatient(Clinic* clinic);
+void printClinicPatients(Clinic* clinic);
 
 
 #endif //FUNCTIONS_H
