@@ -61,9 +61,18 @@ int main() {
             if (userInput2 == "1") {
                 checkInPatient(clinicChoice);
             }
-            else if (userInput2 == "2") { }
-            else if (userInput2 == "3") { }
-            else if (userInput2 == "4") { }
+            else if (userInput2 == "2") {
+                checkInCriticalPatient(clinicChoice);
+            }
+            else if (userInput2 == "3") {
+                clinicChoice->removePatient();
+            }
+            else if (userInput2 == "4") {
+                cout << "Enter Patient SSN: ";
+                int userInput3;
+                cin >> userInput3;
+                clinicChoice->removePatient(userInput3);
+            }
             else if (userInput2 == "5") {
                 printClinicPatients(clinicChoice);
             }

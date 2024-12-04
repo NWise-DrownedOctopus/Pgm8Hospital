@@ -90,12 +90,16 @@ public:
 
     // Method declarations
     int addPatient(ClinicPatient& patientToAdd);
+    int addCriticalPatient(ClinicPatient& patientToAdd);
+    void removePatient();
+    void removePatient(int ssn);
 };
 
 void printMenu1();
 void printMenu2(const string& clinicName);
 
 void checkInPatient(Clinic* clinic);
+void checkInCriticalPatient(Clinic* clinic);
 void printClinicPatients(Clinic* clinic);
 
 

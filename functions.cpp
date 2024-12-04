@@ -4,6 +4,7 @@
 
 #include "functions.h"
 
+#include <iomanip>
 #include <vector>
 
 bool isDigits(string str1) {
@@ -95,6 +96,97 @@ int Clinic::addPatient(ClinicPatient& patientToAdd) {
     return 0;
 }
 
+int Clinic::addCriticalPatient(ClinicPatient& patientToAdd) {
+    // Case: Adding the first patient
+    if (head == nullptr) {
+        head = new ClinicPatient(patientToAdd); // Allocate on the heap
+        tail = head; // Set tail to the same node as head
+        currentPatients++;
+        logger.logMessage("Successfully added patient: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " to: " + clinicName);
+        return 0;
+    }
+
+    // Case: Clinic at capacity
+    if (currentPatients >= capacity) {
+        logger.logMessage("ERROR: Too many patients in: " + clinicName + " ::: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " was not added");
+        return -1;
+    }
+
+    // Case: Adding to the existing list
+
+    // Case 1: head is not Critical
+    if (head->cPatient.type == 'R') {
+        ClinicPatient* tempPatient = head;
+        head = new ClinicPatient(patientToAdd); // Allocate on the heap
+        head->next = tempPatient;
+        currentPatients++;
+        logger.logMessage("Successfully added patient: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " to: " + clinicName);
+        return 0;
+    }
+
+    //Case 2: There is another Critical Patient in the Queue
+    ClinicPatient* previousPatient = head;
+
+    // while the next patient isn't null and the next patient isn't regular we need to keep looking
+    while (previousPatient->next != nullptr && previousPatient->next->cPatient.type != 'R') {
+        previousPatient = previousPatient->next;
+    }
+
+    // we know that we have room for more, and we know that the next slot is either the end of the list, or is a regular patient
+    if (previousPatient->next == nullptr) {
+        logger.logMessage("Successfully added patient: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " to: " + clinicName);
+        return 0;
+    }
+}
+
+void Clinic::removePatient() {
+    if (head == nullptr) {
+        cout << "No more patients." << endl;
+        return;
+    }
+
+    cout << clinicName << " Patient: " << head->cPatient.firstName + " " + head->cPatient.lastName << " was taken to the operating room. " << endl << endl;
+
+    // we make the new head of the list the second in line patient
+    const ClinicPatient* tempPatient = head;
+    head = head->next;
+    delete tempPatient;
+}
+void Clinic::removePatient(int ssn) {
+    if (head == nullptr) {
+        cout << "No more patients." << endl;
+        return;
+    }
+
+    // Case 1: Head is target
+    if (head->cPatient.SSN == ssn) {
+        cout << clinicName << " Patient: " << head->cPatient.firstName + " " + head->cPatient.lastName << " was removed from the waiting list. " << endl << endl;
+        ClinicPatient* tempPatient = head;
+        head = head->next;
+        delete tempPatient;
+        return;
+    }
+
+    // Case 2: target is in middle or is at the end of the list
+    ClinicPatient* previousPatient = head;
+    while (previousPatient->next != nullptr && previousPatient->next->cPatient.SSN != ssn) {
+        previousPatient = previousPatient->next;
+    }
+
+    if (previousPatient->next == nullptr) {
+        // Target was never found
+        cout << "ERROR Heart Clinic: Unable to find patient:" << endl << endl;
+        return;
+    }
+
+    // We are not at the end of the list
+    cout << clinicName << " Patient: " << previousPatient->next->cPatient.firstName + " " + previousPatient->next->cPatient.lastName << " was removed from the waiting list. " << endl << endl;
+    ClinicPatient* tempPatient = previousPatient->next;
+    previousPatient->next = tempPatient->next;
+    tempPatient->next = nullptr;
+}
+
+
 void printMenu1() {
     cout << "\tKC RESEARCH HOSPITAL\n";
     cout << "1: Heart Clinic\n";
@@ -154,14 +246,54 @@ void checkInPatient(Clinic* clinic) {
     }
 }
 
+void checkInCriticalPatient(Clinic* clinic) {
+    Logger logger("output.txt");
+    string fName, lName;
+    int ssNum;
+    try {
+        cout << "Enter Patient's First Name: " << endl;
+        cin >> fName;
+        cout << "Enter Patient's Last Name: " << endl;
+        cin >> lName;
+        cout << "Enter Patient's SSN: " << endl;
+        cin >> ssNum;
+
+        if (fName.empty() || lName.empty()) {
+            throw exception();
+        }
+    }
+    catch(...) {
+        logger.logMessage("Error: Invalid Entry. Patient: " + fName + " " + lName + " was not added");
+    }
+
+    patient tempPatient;
+    tempPatient.firstName = fName;
+    tempPatient.lastName = lName;
+    tempPatient.SSN = ssNum;
+    tempPatient.type = 'C';
+    ClinicPatient tempCPatient(tempPatient);
+    int status;
+    status = clinic->addCriticalPatient(tempCPatient);
+
+    if (status == 0) {
+        cout << clinic->clinicName << " Patient (Critical): " << fName << " " << lName << " was added to the waiting room" << endl;
+    }
+    else {
+        cout << "Error: " << clinic->clinicName << " Patient (Critical): " << fName << " " << lName << " was not added to the waiting room" << endl;
+    }
+}
+
 void printClinicPatients(Clinic *clinic) {
     const ClinicPatient* tempCPatient = clinic->getHead();
     if (clinic->getHead() != nullptr) {
-        cout << "Our Head's name is: " << clinic->getHead()->cPatient.firstName << " " << clinic->getHead()->cPatient.lastName << endl;
+        //cout << "Our Head's name is: " << clinic->getHead()->cPatient.firstName << " " << clinic->getHead()->cPatient.lastName << endl;
     }
+    cout << "Patient List " << endl;
     while (tempCPatient != nullptr) {
-        cout << tempCPatient->cPatient.firstName << " " << tempCPatient->cPatient.lastName << " " << tempCPatient->cPatient.SSN << " " << tempCPatient->cPatient.type << endl;
+        cout << left << setw(30) << tempCPatient->cPatient.firstName + " " + tempCPatient->cPatient.lastName << " " << setw(6) << tempCPatient->cPatient.SSN << " " << setw(3) << tempCPatient->cPatient.type << endl;
         tempCPatient = tempCPatient->next;
     }
     cout << endl;
 }
+
+
