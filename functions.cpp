@@ -156,11 +156,13 @@ void Clinic::removePatient() {
     }
 
     cout << clinicName << " Patient: " << head->cPatient.firstName + " " + head->cPatient.lastName << " was taken to the operating room. " << endl << endl;
+    logger.logMessage(clinicName + " Patient: " + head->cPatient.firstName + " " + head->cPatient.lastName + " was taken to the operating room. \n");
 
     // we make the new head of the list the second in line patient
     const ClinicPatient* tempPatient = head;
     head = head->next;
     delete tempPatient;
+    currentPatients--;
 }
 void Clinic::removePatient(int ssn) {
     if (head == nullptr) {
@@ -171,9 +173,11 @@ void Clinic::removePatient(int ssn) {
     // Case 1: Head is target
     if (head->cPatient.SSN == ssn) {
         cout << clinicName << " Patient: " << head->cPatient.firstName + " " + head->cPatient.lastName << " was removed from the waiting list. " << endl << endl;
+        logger.logMessage(clinicName + " Patient: " + head->cPatient.firstName + " " + head->cPatient.lastName + " was removed from the waiting list. \n");
         ClinicPatient* tempPatient = head;
         head = head->next;
         delete tempPatient;
+        currentPatients--;
         return;
     }
 
@@ -191,9 +195,11 @@ void Clinic::removePatient(int ssn) {
 
     // We are not at the end of the list
     cout << clinicName << " Patient: " << previousPatient->next->cPatient.firstName + " " + previousPatient->next->cPatient.lastName << " was removed from the waiting list. " << endl << endl;
+    logger.logMessage(clinicName + " Patient: " + previousPatient->next->cPatient.firstName + " " + previousPatient->next->cPatient.lastName + " was removed from the waiting list. \n");
     ClinicPatient* tempPatient = previousPatient->next;
     previousPatient->next = tempPatient->next;
     tempPatient->next = nullptr;
+    currentPatients--;
 }
 
 
@@ -221,22 +227,32 @@ void printMenu2(const string& clinicName) {
 
 void checkInPatient(Clinic* clinic) {
     Logger logger("output.txt");
-    string fName, lName;
+    string fName, lName, ssNumText;
     int ssNum;
+    // Case: Clinic at capacity
+    if (clinic->currentPatients == clinic->capacity) {
+        cout << "ERROR: Too many patients in: " + clinic->clinicName;
+        return;
+    }
     try {
         cout << "Enter Patient's First Name: " << endl;
         cin >> fName;
         cout << "Enter Patient's Last Name: " << endl;
         cin >> lName;
         cout << "Enter Patient's SSN: " << endl;
-        cin >> ssNum;
-
+        cin >> ssNumText;
+        if (!isDigits(ssNumText)) {
+            throw exception();
+        }
+        ssNum = stoi(ssNumText);
         if (fName.empty() || lName.empty()) {
             throw exception();
         }
     }
     catch(...) {
+        cout << "Error: Invalid Entry. Patient: " + fName + " " + lName + " was not added" << endl;
         logger.logMessage("Error: Invalid Entry. Patient: " + fName + " " + lName + " was not added");
+        return;
     }
 
     patient tempPatient;
@@ -258,7 +274,7 @@ void checkInPatient(Clinic* clinic) {
 
 void checkInCriticalPatient(Clinic* clinic) {
     Logger logger("output.txt");
-    string fName, lName;
+    string fName, lName, ssNumText;
     int ssNum;
     try {
         cout << "Enter Patient's First Name: " << endl;
@@ -266,14 +282,19 @@ void checkInCriticalPatient(Clinic* clinic) {
         cout << "Enter Patient's Last Name: " << endl;
         cin >> lName;
         cout << "Enter Patient's SSN: " << endl;
-        cin >> ssNum;
-
+        cin >> ssNumText;
+        if (!isDigits(ssNumText)) {
+            throw exception();
+        }
+        ssNum = stoi(ssNumText);
         if (fName.empty() || lName.empty()) {
             throw exception();
         }
     }
     catch(...) {
+        cout << "Error: Invalid Entry. Patient: " + fName + " " + lName + " was not added" << endl;
         logger.logMessage("Error: Invalid Entry. Patient: " + fName + " " + lName + " was not added");
+        return;
     }
 
     patient tempPatient;
@@ -301,6 +322,15 @@ void printClinicPatients(Clinic *clinic) {
     cout << "Patient List " << endl;
     while (tempCPatient != nullptr) {
         cout << left << setw(30) << tempCPatient->cPatient.firstName + " " + tempCPatient->cPatient.lastName << " " << setw(6) << tempCPatient->cPatient.SSN << " " << setw(3) << tempCPatient->cPatient.type << endl;
+        tempCPatient = tempCPatient->next;
+    }
+    cout << endl;
+}
+
+void logClinicPatients(Clinic *clinic, ofstream& oFile) {
+    const ClinicPatient* tempCPatient = clinic->getHead();
+    while (tempCPatient != nullptr) {
+        oFile << clinic->clinicName << "," << tempCPatient->cPatient.firstName + "," + tempCPatient->cPatient.lastName << "," << tempCPatient->cPatient.SSN << endl;
         tempCPatient = tempCPatient->next;
     }
     cout << endl;

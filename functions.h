@@ -61,10 +61,10 @@ public:
 class Clinic {
 private:
     ClinicPatient* head;
-    int capacity;
     Logger logger; // Logger as a member
 
 public:
+    int capacity;
     ClinicPatient* tail;
     string clinicName;
     int currentPatients;
@@ -101,6 +101,7 @@ void printMenu2(const string& clinicName);
 void checkInPatient(Clinic* clinic);
 void checkInCriticalPatient(Clinic* clinic);
 void printClinicPatients(Clinic* clinic);
+void logClinicPatients(Clinic *clinic, ofstream& oFile);
 
 
 #endif //FUNCTIONS_H

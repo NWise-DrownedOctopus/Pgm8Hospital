@@ -84,5 +84,19 @@ int main() {
     }
 
     cout << "Now Exiting Program. Thank You." << endl;
+    ofstream patientLog;
+    patientLog.open("patientLog.csv");
+    if (!patientLog.is_open()) {
+        logger.logMessage("Error opening patient log\n");
+        return 0;
+    }
+
+    patientLog << "Patient List " << endl;
+    logClinicPatients(&heartClinic, patientLog);
+    logClinicPatients(&pulmonaryClinic, patientLog);
+    logClinicPatients(&plasticSurgeryClinic, patientLog);
+
+    patientLog.close();
+
     return 0;
 }
