@@ -132,11 +132,21 @@ int Clinic::addCriticalPatient(ClinicPatient& patientToAdd) {
         previousPatient = previousPatient->next;
     }
 
-    // we know that we have room for more, and we know that the next slot is either the end of the list, or is a regular patient
+    // If no regular patients found, append at the end
     if (previousPatient->next == nullptr) {
+        previousPatient->next = new ClinicPatient(patientToAdd);
+        currentPatients++;
         logger.logMessage("Successfully added patient: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " to: " + clinicName);
         return 0;
     }
+
+    // Otherwise, insert the critical patient before the regular one
+    ClinicPatient* tempPatient = previousPatient->next;
+    previousPatient->next = new ClinicPatient(patientToAdd);
+    previousPatient->next->next = tempPatient;
+    currentPatients++;
+    logger.logMessage("Successfully added patient: " + patientToAdd.cPatient.firstName + " " + patientToAdd.cPatient.lastName + " to: " + clinicName);
+    return 0;
 }
 
 void Clinic::removePatient() {
